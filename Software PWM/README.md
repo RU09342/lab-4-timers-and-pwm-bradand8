@@ -1,28 +1,33 @@
 # Software PWM
-Most microprocessors will have a Timer module, but depending on the device, some may not come with pre-built PWM modules. Instead, you may have to utilize software techniques to synthesize PWM on your own.
+Further use of timers for interrupts can have unique effects when blinking LEDs.
 
-## Task
-You need to generate a 1kHz PWM signal with a duty cycle between 0% and 100%. Upon the processor starting up, you should PWM one of the on-board LEDs at a 50% duty cycle. Upon pressing one of the on-board buttons, the duty cycle of the LED should increase by 10%. Once you have reached 100%, your duty cycle should go back to 0% on the next button press. You also need to implement the other LED to light up when the Duty Cycle button is depressed and turns back off when it is let go. This is to help you figure out if the button has triggered multiple interrupts.
+## PWM Concept
+PWM or Pulse Width modulation allows for changing the duty cycle of a signal. For this lab, the signal is used to blink the LED. So far the LED has had a 50% duty cycle. The duty cycle refers to how long the signal is high divided by the time the signal lasts in a given period. A 50% duty cycle means that the LED is spending as much time on as it is off when it toggles. If the LED has a higher than 50% duty cycle, it will get brighter as it is being powered on for more time than it is powered off, and our eyes will perceive it as brighter. Likewise, if the duty cycle is less than 50%, it will appear dimmer.
 
-### Hints
-You really, really, really, really need to hook up the output of your LED pin to an oscilloscope to make sure that the duty cycle is accurate. Also, since you are going to be doing a lot of initialization, it would be helpful for all persons involved if you created your main function like:
-```c
-int main(void)
-{
-	WDTCTL = WDTPW | WDTHOLD;	// stop watchdog timer
-	LEDSetup(); // Initialize our LEDS
-	ButtonSetup();  // Initialize our button
-	TimerA0Setup(); // Initialize Timer0
-	TimerA1Setup(); // Initialize Timer1
-	__bis_SR_register(LPM0_bits + GIE);       // Enter LPM0 w/ interrupt
-}
+## Parameters
+* 1kHz PwM signal
+* LED1 starts 50% duty cycle and powered off
+* LED2 lights up when button is pressed to test for interrupts
+* Upon pressing a button, the duty cycle for LED 1 should increase by 10%.
+
+## Broken Down
+To make things simpler, four methods were created to initialize the different parameters needed which are called by the main method. The methods are as follows:
+
 ```
-This way, each of the steps in initialization can be isolated for easier understanding and debugging.
+void ledSetup();
+void buttonSetup();
+void timerA0Setup();
+void timerA1Setup();
 
+```
+## How the code works
+After initializing the clocks speeds to the given parameters, two capture compare registers are used to determine the duty cycle. TA0CCR0 is set to 1kHZ as required and TA0CCR1 is set to 500. (Being half of 1000, the duty cycle starts at 50%). In the Button ISR, whenever the button is pressed, LED2 toggles, while the capture compare value for LED 1 is incremented by 100. This raises the duty cycle to 60% for LED 1. Whenever the button is pressed, The duty cycle raises to 10%, until it is at 100%. If the button is pushed after 100%, the duty cycle becomes 0% and the light is off. 
 
-## Extra Work
-### Linear Brightness
-Much like every other things with humans, not everything we interact with we perceive as linear. For senses such as sight or hearing, certain features such as volume or brightness have a logarithmic relationship with our senses. Instead of just incrementing by 10%, try making the brightness appear to change linearly. 
+## Differences Among Processors
+Because of the parameter definitions at the start of the code, the only changes necessary are the pins that correspond to the buttons and LEDs in the definitions. Ofcourse, the FR family processors need the LOCK5 code segment and the FR2311 uses Timer B not A.
 
-### Power Comparison
-Since you are effectively turning the LED off for some period of time, it should follow that the amount of power you are using over time should be less. Using Energy Trace, compare the power consumption of the different duty cycles. What happens if you use the pre-divider in the timer module for the PWM (does it consume less power)?
+### Fun Reminder
+
+			 Time LED ON
+DUTY CYCLE =          -------------------   X 100 = %
+			Time of Period
