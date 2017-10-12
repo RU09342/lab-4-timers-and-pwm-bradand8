@@ -28,6 +28,6 @@ General differences, the Ports for the Buttons as well as the BIT corresponding 
 ## Is It Debouncing?
 Understanding the concept is a big part of debouncing, but how can a person be sure that debouncing occurs? One way to test is to repeatedly press the button at different speeds looking for any quirks in how the LED toggles. An even better way to test the LED involves using equipment such as an oscilliscope to visualize the signal of the button being pressed. If the signal is debounced it should have a smooth transition from low to high, where as if it bounces there will be a staggered signal before settling on the input being high.
 
-## Double Debouncing
+## Double Debouncing (Extra Work)
 For the extra work of this lab, a second button was used to toggle another LED at the same time. After including the necessary enables for the second button and second Led, an additional Port Interrupt Service routine was needed to toggle LED2. However, the same timer was used as the Port ISR calls the timer ISR when it is used. With the same capture compare register, both LEDS toggle at the same rate when the buttons are being pressed.
 
