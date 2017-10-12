@@ -1,15 +1,33 @@
 # Software Debouncing
-In previously labs, we talked about how objects such as switches can cause some nasty effects since they are actually a mechanical system at heart. We talked about the simple hardware method of debouncing, but due to the many different design constraints, you may not be able to add or adjust hardware. Debouncing is also only one of many applications which would require the use of built in Timers to allow for other processes to take place.
+So far, Buttons have been used to trigger interrupts in order to toggle an LED. While they do allow
+for the LED to toggle, there are some concerns that exist due to the physical capabilities of the buttons.
 
-## Task
-You need to utilize the TIMER modules within the MSP430 processors to implement a debounced switch to control the state of an LED. You most likely will want to hook up your buttons on the development boards to an oscilloscope to see how much time it takes for the buttons to settle. The idea here is that your processor should be able to run other code, while relying on timers and interrupts to manage the debouncing in the background. You should not be using polling techniques for this assignment. Your code should also be able to detect 
+## Understanding Bouncing
+When a button is originally pressed, it bounces up and down for a short time (milli seconds) before the value stabilizes.
+This processor reads this as being both pressed and not pressed at the same time before the signal settles on being pressed.
+While the time for this to occur varies from button to button, there are ways to deal with this concern. The fix is known as debouncing.
 
-### Hints
-You need to take a look at how the P1IE and P1IES registers work and how to control them within an interrupt routine. Remember that the debouncing is not going to be the main process you are going to run by the end of the lab.
+## Understanding Debouncing
+While hardware debouncing does occur, it is not always practical to add hardware. This lab relies on software debouncing instead. 
+All software debouncing does is delays the reading on the button pin until a later time when the button has stabilized. This can be implemented with timers.
 
-## Extra Work
-### Low Power Modes
-Go into the datasheets or look online for information about the low power modes of your processors and using Energy Trace, see what the lowest power consumption you can achieve while still running your debouncing code. Take a note when your processor is not driving the LED (or unplug the header connecting the LED and check) but running the interrupt routine for your debouncing.
+## How the Code Work
+Like the previous button interrupt codes, a Port Interupt Service Routine occurs whenever a particular button is pressed that in turn toggles the LED. However, A Timer Interrupt service routine is also used to pause the timer whenever that same button is pressed.  The Port ISR then restarts the timer  when the port interrupt occurs. Using the Port interrupt Edge select (PXIES) decides whether the intterupt will occur when the button is pressed or released.
 
-### Double the fun
-Can you expand your code to debounce two switches? Do you have to use two Timer peripherals to do this?
+
+## Difference Among the Processors
+
+* MSP430G2553
+* MSP430FR6989
+* MSP430FR2311  -- Much like the timer code, the FR2311 uses the B Timer instead of the A timer
+* MSP430FR5994  
+* MSP430F5529
+
+General differences, the Ports for the Buttons as well as the BIT corresponding to the Pin of the button has to be change in accordance with the micro processor used. This information can be obtained from the datasheets or the included codes for each processor. And ofcourse, the three FR family registers need to include the code line:  ```  PM5CTL0 &= ~LOCKLPM5; ``` to stop the processor from clearing all bits.
+
+## Is It Debouncing?
+Understanding the concept is a big part of debouncing, but how can a person be sure that debouncing occurs? One way to test is to repeatedly press the button at different speeds looking for any quirks in how the LED toggles. An even better way to test the LED involves using equipment such as an oscilliscope to visualize the signal of the button being pressed. If the signal is debounced it should have a smooth transition from low to high, where as if it bounces there will be a staggered signal before settling on the input being high.
+
+## Double Debouncing
+For the extra work of this lab, a second button was used to toggle another LED at the same time. After including the necessary enables for the second button and second Led, an additional Port Interrupt Service routine was needed to toggle LED2. However, the same timer was used as the Port ISR calls the timer ISR when it is used. With the same capture compare register, both LEDS toggle at the same rate when the buttons are being pressed.
+
