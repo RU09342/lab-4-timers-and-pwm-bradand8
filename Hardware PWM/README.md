@@ -1,15 +1,11 @@
 # Hardware PWM
-Now that you have done the software version of PWM, now it is time to start leveraging the other features of these Timer Modules.
+Reproduces the effect of the previous lab but utilizing hardware for PWM.
 
-## Task
-You need to replicate the same behavior as in the software PWM, only using the Timer Modules ability to directly output to a GPIO Pin instead of managing them in software. 
+## Implementation
+This lab required the use of a button interrupt service routine and a timer interrupt service routine. The timer module has different modes that it can switch between. Having the timer count up to the given CCR0 value while toggling at the CCR1 value allows for the duty cycle to be changed by simply changing the CCR1 value on the button press ISR. Using the Port select registers allows a certain pin to be set for the given port. 
 
-### Hints 
-Read up on the P1SEL registers as well as look at the Timer modules ability to multiplex.
+## Important Resources 
+The MSP430 Data sheets were a big help for figuring out this lab. (Not Surprising there)
 
-## Extra Work
-### Using ACLK
-Some of these microprocessors have a built in ACLK which is extremely slow compared to your up to 25MHz available on some of them. What is the overall impact on the system when using this clock? Can you actually use your PWM code with a clock that slow?
-
-### Ultra Low Power
-Using a combination of ACLK, Low Power Modes, and any other means you may deem necessary, optimize this PWM code to run at 50% duty cycle with a LED on the MSP430FR5994. In particular, time how long your code can run on the fully charged super capacitor. You do not need to worry about the button control in this case, and you will probably want to disable all the GPIO that you are not using (nudge, nudge, hint, hint).
+## Differences Between Processors 
+Depending on the Board, the LED port and pins needed to be changed. For the FR2311 micro processor, timer B must be used in Timer A's place. The buttons used also had seperate pins from each other, and needed that bit needed to be changed in the code.
